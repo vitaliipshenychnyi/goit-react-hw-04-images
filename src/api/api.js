@@ -9,5 +9,6 @@ export const getPictures = async (textForSearch, page) => {
   );
   // console.log(response.data.totalHits);
   // console.log(response.data.hits);
+  
   return response.data;
 };
