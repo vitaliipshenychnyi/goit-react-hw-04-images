@@ -51,6 +51,8 @@ export class Searchbar extends Component {
         </Form>
       </Header>
 
+      // варіант з formik
+
       /* <Formik initialValues={initialValues}>
 <Header>
   <FormWraper onSubmit={this.handleSubmit}>
