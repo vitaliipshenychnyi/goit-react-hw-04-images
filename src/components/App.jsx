@@ -17,7 +17,7 @@ export const App = () => {
   const [status, setStatus] = useState('idle');
   const [showModal, setShowModal] = useState(false);
   const [urlBig, setUrlBig] = useState('');
-  // const [alt, setAlt] = useState('');
+  const [alt, setAlt] = useState('');
 
   // метод отримання та збереження у state тексту для пошуку зображення
   const receiveTextForSearch = text => {
@@ -74,6 +74,7 @@ export const App = () => {
   // метод відкриття модального вікна
   const openModal = event => {
     setUrlBig(event.target.dataset.url);
+    setAlt(event.target.alt);
     toggleModal();
   };
 
@@ -97,8 +98,7 @@ export const App = () => {
 
       {showModal && (
         <ModalImg closeModal={toggleModal}>
-          {/* <img src={urlBig} alt={alt} /> */}
-          <img src={urlBig} alt='alt'/>
+          <img src={urlBig} alt={alt} />
         </ModalImg>
       )}
 
