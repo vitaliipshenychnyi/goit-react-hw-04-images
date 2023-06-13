@@ -1,4 +1,4 @@
-import { React, Component } from 'react';
+import { useState, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { getPictures } from 'api/api';
@@ -9,138 +9,99 @@ import { Loader } from './loader/Loader';
 import { Button } from './button/Button';
 import { ModalImg } from './modal/Modal';
 
-export class App extends Component {
-  state = {
-    textForSearch: '',
-    pictures: null,
-    totalHits: null,
-    error: null,
-    status: 'idle',
-    showModal: false,
-    urlBig: '',
-    alt: '',
-  };
+export const App = () => {
+  const [textForSearch, setTextForSearch] = useState('');
+  const [pictures, setPictures] = useState(null);
+  const [totalHits, setTotalHits] = useState(null);
+  const [error, setError] = useState(null);
+  const [status, setStatus] = useState('idle');
+  const [showModal, setShowModal] = useState(false);
+  const [urlBig, setUrlBig] = useState('');
+  const [alt, setAlt] = useState('');
 
   // метод отримання та збереження у state тексту для пошуку зображення
-  receiveTextForSearch = text => {
-    this.setState({ textForSearch: text });
+  const receiveTextForSearch = text => {
+    setTextForSearch(text);
   };
 
   // метод отримання та збереження перших зображень у state
-  async componentDidUpdate(_, prevState) {
-    const { textForSearch } = this.state;
+  useEffect(() => {
+    if (textForSearch) {
+      setStatus('pending');
+      const fetchPictures = async () => {
+        try {
+          const data = await getPictures(textForSearch);
+          const pictures = data.hits;
+          const totalHits = data.totalHits;
 
-    if (prevState.textForSearch !== textForSearch) {
-      this.setState({ status: 'pending' });
-
-      try {
-        const data = await getPictures(textForSearch);
-        const pictures = data.hits;
-        const totalHits = data.totalHits;
-
-        if (!pictures.length) {
-          this.setState({
-            error: `Зображення ${textForSearch} відсутні`,
-            status: 'rejected',
-          });
-        } else {
-          this.setState({ pictures, status: 'resolved', totalHits });
+          if (!pictures.length) {
+            setError(`Зображення ${textForSearch} відсутні`);
+            setStatus('rejected');
+          } else {
+            setPictures(pictures);
+            setTotalHits(totalHits);
+            setStatus('resolved');
+          }
+        } catch (error) {
+          setError(error.message);
+          setStatus('rejected');
         }
-      } catch (error) {
-        this.setState({ error: error.message, status: 'rejected' });
-      }
+      };
+
+      fetchPictures(textForSearch);
     }
-  }
+  }, [textForSearch]);
 
-  // метод отримання та додавання наступних зображень до state
-  addPictures = async page => {
-    const { textForSearch } = this.state;
-
+  // // метод отримання та додавання наступних зображень до state
+  const addPictures = async page => {
     try {
       const data = await getPictures(textForSearch, page);
       const pictures = data.hits;
 
       if (!pictures.length) {
-        this.setState({
-          error: `Зображення ${textForSearch} відсутні`,
-          status: 'rejected',
-        });
+        setError(`Зображення ${textForSearch} відсутні`);
+        setStatus('rejected');
       } else {
-        this.setState(prevState => ({
-          pictures: [...prevState.pictures, ...pictures],
-          status: 'resolved',
-        }));
+        setPictures(prevState => [...prevState, ...pictures]);
+        setStatus('resolved');
       }
     } catch (error) {
-      this.setState({ error: error.message, status: 'rejected' });
+      setError(error.message);
+      setStatus('rejected');
     }
   };
 
   // метод відкриття модального вікна
-  openModal = event => {
-    this.setState({ urlBig: event.target.dataset.url });
-    this.toggleModal();
+  const openModal = event => {
+    setUrlBig(event.target.dataset.url);
+    toggleModal();
   };
 
   // метод зміни стану модального вікна
-  toggleModal = () => {
-    this.setState({ showModal: !this.state.showModal });
+  const toggleModal = () => {
+    setShowModal(!showModal);
   };
 
-  render() {
-    const { status, pictures, error, totalHits, showModal, urlBig, alt } =
-      this.state;
-    const appearBtnOrNot = status === 'resolved' && totalHits > pictures.length;
+  const appearBtnOrNot = status === 'resolved' && totalHits > pictures.length;
 
-    return (
-      <Wrapper>
-        <Searchbar onSubmit={this.receiveTextForSearch} />
+  return (
+    <Wrapper>
+      <Searchbar receiveTextForSearch={receiveTextForSearch} />
 
-        {status === 'pending' && <Loader />}
-        {status === 'resolved' && (
-          <ImageGallery pictures={pictures} onOpenModal={this.openModal} />
-        )}
-        {status === 'rejected' && <p>{error}</p>}
-        {appearBtnOrNot && <Button morePictures={this.addPictures} />}
+      {status === 'pending' && <Loader />}
+      {status === 'resolved' && (
+        <ImageGallery pictures={pictures} onOpenModal={openModal} />
+      )}
+      {status === 'rejected' && <p>{error}</p>}
+      {appearBtnOrNot && <Button addPictures={addPictures} />}
 
-        {showModal && (
-          <ModalImg closeModal={this.toggleModal}>
-            <img src={urlBig} alt={alt} />
-          </ModalImg>
-        )}
+      {showModal && (
+        <ModalImg closeModal={toggleModal}>
+          <img src={urlBig} alt={alt} />
+        </ModalImg>
+      )}
 
-        <ToastContainer autoClose={3000} />
-      </Wrapper>
-    );
-  }
-}
-
-// *******************************************************
-// ПОПЕРЕДНІЙ КОД
-
-// import { React, Component } from 'react';
-// import { ToastContainer } from 'react-toastify';
-// import 'react-toastify/dist/ReactToastify.css';
-// import { Searchbar } from './searchbar/Searchbar';
-// import { ImageGallery } from './image-gallery/ImageGallery';
-// import { Wrapper } from './App.styled';
-
-// export class App extends Component {
-//   state = { textForSearch: '' };
-
-//   // метод отримання та збереження у state тексту для пошуку зображення
-//   receiveTextForSearch = text => {
-//     this.setState({ textForSearch: text });
-//   };
-
-//   render() {
-//     return (
-//       <Wrapper>
-//         <Searchbar onSubmit={this.receiveTextForSearch} />
-//         <ImageGallery textForSearch={this.state.textForSearch} />
-
-//         <ToastContainer autoClose={3000} />
-//       </Wrapper>
-//     );
-//   }
-// }
+      <ToastContainer autoClose={3000} />
+    </Wrapper>
+  );
+};
