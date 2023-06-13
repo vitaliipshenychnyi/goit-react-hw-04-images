@@ -9,6 +9,8 @@ import { Loader } from './loader/Loader';
 import { Button } from './button/Button';
 import { ModalImg } from './modal/Modal';
 
+const scroll = document.querySelector('body');
+
 export const App = () => {
   const [textForSearch, setTextForSearch] = useState('');
   const [pictures, setPictures] = useState(null);
@@ -76,11 +78,13 @@ export const App = () => {
     setUrlBig(event.target.dataset.url);
     setAlt(event.target.alt);
     setShowModal(true);
+    scroll.classList.add('stopScroll');
   };
 
   // метод закриття модального вікна
   const closeModal = () => {
     setShowModal(false);
+    scroll.classList.remove('stopScroll');
   };
 
   const appearBtnOrNot = status === 'resolved' && totalHits > pictures.length;
