@@ -9,7 +9,6 @@ const modalRoot = document.querySelector('#modal-root');
 export const ModalImg = ({ closeModal, children }) => {
   // функція закриття модального вікна по клавіші ESC
   const handleKeyDown = event => {
-    console.log(event);
     if (event.code === 'Escape') {
       closeModal();
     }
