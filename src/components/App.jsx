@@ -75,12 +75,12 @@ export const App = () => {
   const openModal = event => {
     setUrlBig(event.target.dataset.url);
     setAlt(event.target.alt);
-    toggleModal();
+    setShowModal(true);
   };
 
-  // метод зміни стану модального вікна
-  const toggleModal = () => {
-    setShowModal(!showModal);
+  // метод закриття модального вікна
+  const closeModal = () => {
+    setShowModal(false);
   };
 
   const appearBtnOrNot = status === 'resolved' && totalHits > pictures.length;
@@ -97,7 +97,7 @@ export const App = () => {
       {appearBtnOrNot && <Button addPictures={addPictures} />}
 
       {showModal && (
-        <ModalImg closeModal={toggleModal}>
+        <ModalImg closeModal={closeModal}>
           <img src={urlBig} alt={alt} />
         </ModalImg>
       )}
